@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect
 import json, os
 from datetime import datetime
 
-app = Flask(__name__, template_folder='.')  # теперь шаблоны ищутся и в корне
+app = Flask(__name__)
 DATA_FILE = 'teachers.json'
 
 def load_data():
