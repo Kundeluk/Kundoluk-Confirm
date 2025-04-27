@@ -2,7 +2,13 @@ from flask import Flask, render_template, request, redirect
 import json, os
 from datetime import datetime
 
-app = Flask(__name__)
+# указываем, что шаблоны (и статические файлы) — в корне
+app = Flask(
+    __name__,
+    template_folder='.',  # шаблоны рядом с app.py
+    static_folder='.'     # если у вас есть стили/скрипты в корне
+)
+
 DATA_FILE = 'teachers.json'
 
 def load_data():
@@ -35,8 +41,11 @@ def confirm():
         data = load_data()
         data.append(entry)
         save_data(data)
+        # при удачной отправке — редирект на внешний сайт
         return redirect("https://kundoluk.edu.kg/")
+    # при GET отдадим index.html из корня
     return render_template('index.html')
 
 if __name__ == '__main__':
+    # в продакшне не запускайте так, а через WSGI-сервер
     app.run(port=5000)
