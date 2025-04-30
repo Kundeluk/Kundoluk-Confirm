@@ -31,7 +31,7 @@ def save_data(data):
 # GET / — отдать форму
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    return render_template('Adelina.html')
 
 # POST /confirm — обработать форму
 @app.route('/confirm', methods=['POST'])

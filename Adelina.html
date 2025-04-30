@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Квест для Адэлины</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <style>
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Source Code Pro', monospace; color: #0f0; }
+    /* Цифровой дождь */
+    #rain { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    /* Терминал */
+    #terminal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 600px; height: 60%; background: rgba(0,0,0,0.85); border: 2px solid #0f0; border-radius: 8px; box-shadow: 0 0 20px #0f0; display: flex; flex-direction: column; }
+    #output { flex: 1; padding: 20px; overflow-y: auto; white-space: pre-wrap; font-size: 1rem; line-height: 1.4; }
+    #input { display: flex; padding: 10px 20px; border-top: 1px solid #0f0; }
+    #prompt { margin-right: 10px; }
+    #cmd { flex: 1; background: transparent; border: none; outline: none; color: inherit; font-size: 1rem; }
+    /* Кнопка 3D сердечко */
+    #starBtn { position: absolute; bottom: 20px; right: 20px; background: transparent; border: none; cursor: pointer; }
+    #heartBtn { width: 50px; height: 50px; fill: #e25555; transform: perspective(600px) rotateX(25deg); transition: transform 0.3s; }
+    #heartBtn:hover { transform: perspective(600px) rotateX(0deg) rotateY(25deg) scale(1.1); }
+    /* Цвет комплиментов */
+    .compliment { color: #ff69b4; }
+  </style>
+</head>
+<body>
+  <canvas id="rain"></canvas>
+  <div id="terminal">
+    <div id="output"></div>
+    <div id="input"><span id="prompt">>>></span><input id="cmd" autocomplete="off" autofocus /></div>
+  </div>
+  <button id="starBtn" title="Получить 50 звезд от Алихана!">
+    <svg id="heartBtn" viewBox="0 0 32 29.6"><path d="M23.6,0c-3.4,0-6.4,1.9-8,4.7C13.8,1.9,10.8,0,7.4,0C3.3,0,0,3.3,0,7.4c0,4.2,3.4,7.5,8.6,12.1l7.4,6.9l7.4-6.9C28.6,14.9,32,11.6,32,7.4C32,3.3,28.7,0,23.6,0z"/></svg>
+  </button>
+  <script>
+    // Цифровой дождь
+    const rainCanvas = document.getElementById('rain'), rainCtx = rainCanvas.getContext('2d');
+    let W = rainCanvas.width = window.innerWidth, H = rainCanvas.height = window.innerHeight;
+    const columns = Math.floor(W / 20), drops = Array(columns).fill(0), characters = '01';
+    function drawRain() {
+      rainCtx.fillStyle = 'rgba(0,0,0,0.05)';
+      rainCtx.fillRect(0, 0, W, H);
+      rainCtx.fillStyle = '#0f0';
+      rainCtx.font = '16px Source Code Pro';
+      drops.forEach((y, i) => {
+        const x = i * 20;
+        const text = characters.charAt(Math.floor(Math.random() * characters.length));
+        rainCtx.fillText(text, x, y);
+        drops[i] = (y > H || Math.random() > 0.975) ? 0 : y + 20;
+      });
+      requestAnimationFrame(drawRain);
+    }
+    drawRain();
+    window.addEventListener('resize', () => { W = rainCanvas.width = window.innerWidth; H = rainCanvas.height = window.innerHeight; });
+
+    // Данные квеста
+    const stages = [
+      { question: 'Как меня зовут?', hint: 'Подсказка: моё имя начинается на "А"', answer: 'Алихан' },
+      { question: 'В каком я классе?', hint: 'Подумай о моей школе', answer: '9-А' },
+      { question: 'Какой мой любимый язык программирования?', hint: 'Я пишу ботов на нём', answer: 'Python' },
+      { question: 'Сколько мне лет?', hint: 'Я родился в 2010 году', answer: '14' },
+      { question: 'В каком городе я живу?', hint: 'Это столица Кыргызстана', answer: 'Бишкек' },
+      { question: 'Как называется проект умных очков для слепых, над которым я работаю?', hint: 'Начинается на "S"', answer: 'Sensei' },
+      { question: 'Сколько у тебя будет уровней в этом квесте?', hint: 'Подумай про количество вопросов', answer: '7' }
+    ];
+    const compliments = [
+      'Твой смех как лучик солнца в хмурый день. 😊',
+      'Ты делаешь этот мир немного лучше своими словами. ✨',
+      'С тобой интересно разговаривать о чём угодно. 💬',
+      'Твоя доброта и забота ценятся мной. 🤗',
+      'Ты вдохновляешь меня становиться лучше. 🚀',
+      'Твоя энергия заряжает позитивом каждого. ⚡️',
+      'Рад, что именно ты проходишь этот квест. 🎉'
+    ];
+
+    let stage = 0;
+    const out = document.getElementById('output'), cmd = document.getElementById('cmd');
+    function write(text = '') { out.innerHTML += text + '\n'; out.scrollTop = out.scrollHeight; }
+    function promptStage() {
+      write(`\nУровень ${stage + 1}/${stages.length}:`);
+      write(stages[stage].question);
+      write(stages[stage].hint);
+      cmd.disabled = false;
+      cmd.focus();
+    }
+    function finish() {
+      write('\n*** Квест завершён! ***');
+      write('Нажми ❤️, чтобы получить свои 50 звезд!');
+      cmd.disabled = true;
+    }
+
+    // Инициализация квеста
+    write('Привет, Адэлина!');
+    write('За каждый правильный ответ ты получаешь комплимент от меня.');
+    promptStage();
+
+    cmd.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      const val = cmd.value.trim();
+      write(`>>> ${val}`);
+      cmd.value = '';
+      cmd.disabled = true;
+      if (val === stages[stage].answer) {
+        // вывод комплимента цветом
+        write('✔ ' + `<span class=\"compliment\">${compliments[stage]}</span>`);
+        stage++;
+        stage < stages.length ? promptStage() : finish();
+      } else {
+        write('✖ Неверно, попробуй ещё.');
+        cmd.disabled = false;
+        cmd.focus();
+      }
+    });
+
+    // Кнопка звезд
+    document.getElementById('starBtn').addEventListener('click', () => {
+      write('\n🎉 Вы получили 50 звезд от Алихана в Telegram! 🎉');
+      confetti({ particleCount: 100, spread: 60 });
+      document.getElementById('starBtn').disabled = true;
+    });
+  </script>
+</body>
+</html>
